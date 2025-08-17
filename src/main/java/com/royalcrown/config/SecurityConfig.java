@@ -1,0 +1,116 @@
+//package com.royalcrown.config;
+//
+//import org.springframework.context.annotation.Bean;
+//import org.springframework.context.annotation.Configuration;
+//import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+//import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+//import org.springframework.security.config.http.SessionCreationPolicy;
+//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+//import org.springframework.security.crypto.password.PasswordEncoder;
+//import org.springframework.security.web.SecurityFilterChain;
+//import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+//
+//import com.royalcrown.service.ApartmentSecurityService;
+//
+//@Configuration
+//@EnableMethodSecurity
+//public class SecurityConfig {
+//
+//    private final JwtProvider jwtProvider;
+//
+//    public SecurityConfig(JwtProvider jwtProvider) {
+//        this.jwtProvider = jwtProvider;
+//    }
+//
+//    @Bean
+//    public PasswordEncoder passwordEncoder() {
+//        return new BCryptPasswordEncoder();
+//    }
+//
+////    @Bean
+////    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
+////        http
+////            .csrf(csrf -> csrf.disable())
+////            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+////            .authorizeHttpRequests(auth -> auth
+////                .requestMatchers("/auth/login", "/auth/register", "/auth/register-batch").permitAll()
+////                .requestMatchers("/admin/**").hasAnyRole("PRESIDENT", "ADMIN")
+////                .requestMatchers("/security/**").hasRole("SECURITY_GUARD")
+////                .requestMatchers("/otp/**").hasAnyRole("OWNER", "TENANT")
+////                .requestMatchers("/auth/me", "/auth/logout", "/auth/change-password").authenticated()
+////                .anyRequest().denyAll()
+////            )
+////            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+////
+////        return http.build();
+////    }
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
+//        http
+//            .csrf(csrf -> csrf.disable())
+//            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//            .authorizeHttpRequests(auth -> auth
+//                .requestMatchers("/auth/login", "/auth/register", "/auth/register-batch").permitAll()
+//                .requestMatchers("/admin/**").hasAnyRole("PRESIDENT", "ADMIN")
+//                .requestMatchers("/security/**").hasRole("SECURITY_GUARD")
+//                .requestMatchers("/otp/**").hasAnyRole("OWNER", "TENANT")
+//                .requestMatchers("/auth/me", "/auth/logout", "/auth/change-password").authenticated()
+//                .anyRequest().denyAll()
+//            )
+//            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+//
+//        return http.build();
+//    }
+//
+//}
+
+
+package com.royalcrown.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+@Configuration
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    private final JwtProvider jwtProvider;
+
+    public SecurityConfig(JwtProvider jwtProvider) {
+        this.jwtProvider = jwtProvider;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/auth/login", "/auth/register", "/auth/register-batch").permitAll()
+                .requestMatchers("/admin/**").hasAnyRole("PRESIDENT", "ADMIN")
+//                .requestMatchers("/security/visitsData").hasAnyRole("PRESIDENT", "ADMIN","SECURITY_GUARD")
+                .requestMatchers("/security/visits").hasAnyRole("PRESIDENT", "ADMIN")
+                .requestMatchers("/otp/generate").hasAnyRole("OWNER", "TENANT")
+                .requestMatchers("/otp/validate").hasAnyRole("SECURITY_GUARD")
+                .requestMatchers("/auth/me", "/auth/logout", "/auth/change-password").authenticated()
+                .anyRequest().denyAll()
+            )
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+}
