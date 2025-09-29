@@ -21,6 +21,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class VisitLogController {
     private static final Logger logger = LoggerFactory.getLogger(VisitLogController.class);
     private final ApartmentSecurityService service;
@@ -28,7 +29,6 @@ public class VisitLogController {
     public VisitLogController(ApartmentSecurityService service) {
         this.service = service;
     }
-
     @GetMapping("/security/visits")
     @PreAuthorize("hasAnyRole('PRESIDENT','ADMIN')")
     public ResponseEntity<?> listVisits(Authentication authentication,
@@ -36,31 +36,23 @@ public class VisitLogController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime fromDate,
 
             @RequestParam(name = "toDate")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime toDate,
-
-            @RequestParam(name = "flatNo", required = false) String flatNo,
-            @RequestParam(name = "ownerName", required = false) String ownerName) {
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime toDate) {
         try {
             if (authentication == null || !authentication.isAuthenticated()) {
                 return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
             }
 
-            com.royalcrown.model.User user = (com.royalcrown.model.User) authentication.getPrincipal();
+            LocalDateTime fromIst = fromDate.toLocalDateTime();
+            LocalDateTime toIst   = toDate.toLocalDateTime();
 
-            // ✅ Convert to IST LocalDateTime
-            LocalDateTime fromIst = fromDate.atZoneSameInstant(ZoneId.of("Asia/Kolkata")).toLocalDateTime();
-            LocalDateTime toIst   = toDate.atZoneSameInstant(ZoneId.of("Asia/Kolkata")).toLocalDateTime();
+            logger.info("Received request for visits from {} to {}", fromIst, toIst);
 
-            List<VisitLog> visits = service.listVisits(
-                    user.getUsername(),
-                    fromIst,
-                    toIst,
-                    Optional.ofNullable(flatNo),
-                    Optional.ofNullable(ownerName));
+            List<VisitLog> visits = service.listVisits(null, fromIst, toIst);
 
+            logger.info("Returning {} visits", visits.size());
             return ResponseEntity.ok(visits);
         } catch (RuntimeException e) {
-            logger.error("List visits error: {}", e.getMessage());
+            logger.error("List visits error: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
@@ -86,7 +78,6 @@ public class VisitLogController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-
     
 //    @GetMapping("/security/visits")
 //    @PreAuthorize("hasAnyRole('PRESIDENT','ADMIN')")

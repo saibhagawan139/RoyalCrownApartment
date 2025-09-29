@@ -69,8 +69,6 @@ public class ApartmentSecurityService {
 
     @Transactional
     public void logout(String username, String deviceId) {
-        // Stateless JWT: no invalidation here, can implement blacklist if needed
-        // Currently no operation
     }
 
     // ------------------ USER REGISTRATION & MANAGEMENT --------------------
@@ -176,9 +174,12 @@ public class ApartmentSecurityService {
         if (!userRepository.existsByUsername(username)) {
             throw new RuntimeException("User not found: " + username);
         }
-        userRepository.deleteById(username);
+
+        // Use custom delete method instead of deleteById
+        userRepository.deleteByUsername(username);
         logger.info("User '{}' deleted", username);
     }
+
 
     @Transactional
     public void deleteUsersBulk(List<String> usernames) {
@@ -263,9 +264,6 @@ public class ApartmentSecurityService {
         logger.info("Generated OTP {} for flat '{}', guestType '{}', expires at {}", 
                     saved.getOtpCode(), flatNo, guestType, saved.getExpiresAt());
         return saved;
-//        otpEntryRepository.save(otpEntry);
-//        logger.info("Generated OTP for flat '{}', guestType '{}'", flatNo, guestType);
-//        return otpEntry;
     }
 
     @Transactional
@@ -330,16 +328,19 @@ public class ApartmentSecurityService {
 
     // ------------------ VISIT LOG MANAGEMENT ---------------------
 
-    public List<VisitLog> listVisits(String securityGuardUsername, LocalDateTime from, LocalDateTime to,
-                                     Optional<String> optFlatNo, Optional<String> optOwnerName) {
+    public List<VisitLog> listVisits(String securityGuardUsername, LocalDateTime from, LocalDateTime to) {
+        List<VisitLog> visits;
 
-        List<VisitLog> visits = visitLogRepository.findBySecurityGuardUsernameAndVisitTimeBetween(
-                securityGuardUsername, from, to);
+        if (securityGuardUsername != null && !securityGuardUsername.isBlank()) {
+            // Fetch visits filtered by security guard username
+            visits = visitLogRepository.findBySecurityGuardUsernameAndVisitTimeBetween(
+                    securityGuardUsername, from, to);
+        } else {
+            // Fetch all visits within date range if username is not used
+            visits = visitLogRepository.findByVisitTimeBetween(from, to);
+        }
 
-        return visits.stream()
-                .filter(v -> optFlatNo.map(f -> f.equals(v.getFlatNo())).orElse(true))
-                .filter(v -> optOwnerName.map(o -> o.equalsIgnoreCase(v.getOwnerUsername())).orElse(true))
-                .collect(Collectors.toList());
+        return visits; // no extra filtering needed now
     }
 
     @Transactional

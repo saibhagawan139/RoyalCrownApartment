@@ -14,6 +14,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/admin/flat")
 @PreAuthorize("hasAnyRole('PRESIDENT','ADMIN')")
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class FlatAdminController {
     private static final Logger logger = LoggerFactory.getLogger(FlatAdminController.class);
     private final ApartmentSecurityService service;
