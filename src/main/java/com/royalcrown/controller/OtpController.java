@@ -16,6 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/otp")
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class OtpController {
     private static final Logger logger = LoggerFactory.getLogger(OtpController.class);
     private final ApartmentSecurityService service;

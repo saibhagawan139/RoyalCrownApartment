@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.royalcrown.model.VisitLog;
@@ -17,8 +19,8 @@ public interface VisitLogRepository extends JpaRepository<VisitLog, Long> {
             LocalDateTime to
     );
 
-    List<VisitLog> findByFlatNoAndVisitTimeBetween(
-            String flatNo,
+    // New repository method to fetch all visits by date range
+    List<VisitLog> findByVisitTimeBetween(
             LocalDateTime from,
             LocalDateTime to
     );
@@ -33,4 +35,3 @@ public interface VisitLogRepository extends JpaRepository<VisitLog, Long> {
             LocalDateTime to
     );
 }
-

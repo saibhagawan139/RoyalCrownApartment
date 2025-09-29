@@ -16,6 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final ApartmentSecurityService service;
@@ -101,6 +102,7 @@ public class AuthController {
                 return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
             }
             User user = (User) authentication.getPrincipal();
+            logger.info("username: {}, flatNo: {}, role: {}", user.getUsername(), user.getFlatNo(), user.getRole());
             user.setPasswordHash(null); // Hide password hash
             return ResponseEntity.ok(user);
         } catch (RuntimeException ex) {

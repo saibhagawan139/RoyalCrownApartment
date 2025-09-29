@@ -8,9 +8,13 @@ import org.springframework.stereotype.Repository;
 
 import com.royalcrown.model.User;
 
+import jakarta.transaction.Transactional;
+
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByUsername(String username);
     List<User> findByFlatNo(String flatNo);
     boolean existsByUsername(String username);
+    @Transactional
+    void deleteByUsername(String username);
 }
